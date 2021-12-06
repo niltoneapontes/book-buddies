@@ -1,12 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/white" />
-
-    <!-- You can insert your own image assets here -->
-    <!-- <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@mipmap/launch_image" />
-    </item> -->
-</layer-list>
+<vector android:height="1817.6dp" android:viewportHeight="568"
+    android:viewportWidth="320" android:width="1024dp"
+    xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android">
+    <group>
+        <clip-path android:pathData="M0,0h320v568h-320z"/>
+        <path android:pathData="M0,0h320v568h-320z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:centerX="160" android:centerY="284"
+                    android:gradientRadius="284" android:type="radial">
+                    <item android:color="#FFF56811" android:offset="0"/>
+                    <item android:color="#FFF45D01" android:offset="1"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:fillColor="#F56811" android:pathData="M58,362.5C5.2,329.7 -39.333,348.833 -55,362.5L-68.5,577H408.5C434.667,501.333 470,344.8 402,324C317,298 339,463 256.5,495.5C174,528 124,403.5 58,362.5Z"/>
+        <path android:fillColor="#F5F5F5" android:pathData="M200,234.057V290.743H120V234.057L134.971,228H146.971L160.114,237.143L173.029,228H184.914L200,234.057ZM137.371,240.114L132.229,242.286V278.629H154.057V247.657L143.086,240.114H137.371ZM176.914,240.114L166.4,247.657V278.629H187.657V242.286L182.629,240.114H176.914Z"/>
+        <path android:fillColor="#F5F5F5" android:pathData="M200,334.779V278.093H120V334.779L134.971,340.836H146.971L160.114,331.693L173.029,340.836H184.914L200,334.779ZM137.371,328.722L132.229,326.551V290.208H154.057V321.179L143.086,328.722H137.371ZM176.914,328.722L166.4,321.179V290.208H187.657V326.551L182.629,328.722H176.914Z"/>
+        <path android:fillColor="#F56811" android:pathData="M91.5,120.5C74.3,163.7 12,177.167 -17,178.5V-74.5H202.5C197.333,-49.833 179.1,3.7 147.5,20.5C108,41.5 113,66.5 91.5,120.5Z"/>
+        <path android:fillColor="#F56811" android:pathData="M269.5,224.5C289.1,270.9 327,287.833 343.5,290.5V59C301,73.833 209.3,111.6 182.5,144C155.7,176.4 193.667,178.5 216,175.5C225.667,172.5 249.9,178.1 269.5,224.5Z"/>
+    </group>
+</vector>
