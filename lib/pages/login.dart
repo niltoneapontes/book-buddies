@@ -1,8 +1,8 @@
 import 'package:bookbuddies/components/primary-button.dart';
 import 'package:bookbuddies/components/secondary-button.dart';
-import 'package:bookbuddies/models/login.dart';
 import 'package:bookbuddies/routes/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -18,13 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   void _onSubmit() async {
     _formKey.currentState?.save();
 
-    final login = Login(
-      email: _formData['email'] as String,
-      password: _formData['password'] as String,
-    );
-    if (login.email == 'test@bookbuddies.com' && login.password == '123456') {
-      Navigator.of(context).pushNamed(AppRoutes.CODE);
-    } else if (login.email != '' || login.password != '') {
+    if (_formData['email'] == '' || _formData['password'] == '') {
       await showDialog(
           context: context,
           builder: (ctx) {
@@ -41,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
                       size: 64,
                       color: Colors.red[400],
                     ),
-                    Text('E-mail ou senha incorretos, tente novamente',
+                    Text('E-mail ou senha incorretos, tente novamente!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey,
@@ -53,6 +47,80 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
           });
+    } else {
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
+                email: _formData['email'] as String,
+                password: _formData['password'] as String);
+        print(userCredential.user);
+        if (userCredential.user?.emailVerified == false) {
+          await userCredential.user?.sendEmailVerification();
+          Navigator.of(context).pushNamed(AppRoutes.CODE);
+        } else {
+          Navigator.of(context).pushNamed(AppRoutes.HOME);
+        }
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          await showDialog(
+              context: context,
+              builder: (ctx) {
+                return Dialog(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          size: 64,
+                          color: Colors.red[400],
+                        ),
+                        Text('E-mail ou senha incorretos, tente novamente',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ))
+                      ],
+                    ),
+                  ),
+                );
+              });
+        } else if (e.code == 'wrong-password') {
+          await showDialog(
+              context: context,
+              builder: (ctx) {
+                return Dialog(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          size: 64,
+                          color: Colors.red[400],
+                        ),
+                        Text('E-mail ou senha incorretos, tente novamente',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ))
+                      ],
+                    ),
+                  ),
+                );
+              });
+        }
+      }
     }
   }
 

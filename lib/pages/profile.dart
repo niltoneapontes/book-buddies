@@ -1,6 +1,7 @@
 import 'package:bookbuddies/components/primary-button.dart';
 import 'package:bookbuddies/routes/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Profile extends StatefulWidget {
   const Profile({Key? key}) : super(key: key);
@@ -14,9 +15,12 @@ class _ProfileState extends State<Profile> {
   bool isConfirmPasswordShown = false;
 
   final _formKey = GlobalKey<FormState>();
+  User currentUser = FirebaseAuth.instance.currentUser as User;
 
   @override
   Widget build(BuildContext context) {
+    print({'User to edit': currentUser});
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -47,6 +51,7 @@ class _ProfileState extends State<Profile> {
                       return null;
                     }
                   },
+                  initialValue: currentUser.displayName,
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.person),
                     labelText: 'Nome completo',
@@ -88,6 +93,7 @@ class _ProfileState extends State<Profile> {
                 ),
                 TextFormField(
                   textInputAction: TextInputAction.next,
+                  initialValue: currentUser.email,
                   validator: (value) {
                     if (value!.isEmpty ||
                         value.length < 3 ||
@@ -138,6 +144,7 @@ class _ProfileState extends State<Profile> {
                 ),
                 TextFormField(
                   textInputAction: TextInputAction.next,
+                  initialValue: currentUser.phoneNumber,
                   validator: (value) {
                     if (value!.isEmpty || value.length < 3) {
                       return 'Entre seu telefone no formato (DDD) XXXXX-XXXX';

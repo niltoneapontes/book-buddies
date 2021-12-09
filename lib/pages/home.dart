@@ -6,7 +6,7 @@ import 'package:bookbuddies/providers/location_provider.dart';
 import 'package:bookbuddies/routes/routes.dart';
 import 'package:bookbuddies/services/location_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -83,12 +83,13 @@ class _HomePageState extends State<HomePage> {
       ),
     );
 
+    User currentUser = FirebaseAuth.instance.currentUser as User;
     var locationProvider = Provider.of<LocationProvider>(context, listen: true);
 
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('Olá, Nilton Pontes'),
+          title: Text('Olá, ${currentUser.displayName}'),
           flexibleSpace: Image(
             image: AssetImage('assets/header.png'),
             fit: BoxFit.fill,

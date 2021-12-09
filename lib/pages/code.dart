@@ -1,10 +1,10 @@
 import 'package:bookbuddies/components/primary-button.dart';
 import 'package:bookbuddies/components/secondary-button.dart';
-import 'package:bookbuddies/models/login.dart';
 import 'package:bookbuddies/pages/loading.dart';
 import 'package:bookbuddies/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class VerificationCode extends StatefulWidget {
   @override
@@ -13,22 +13,53 @@ class VerificationCode extends StatefulWidget {
 
 class _VerificationCodeState extends State<VerificationCode> {
   final _formKey = GlobalKey<FormState>();
-  String verificationCode = '';
 
-  void _onSubmit() async {
+  User current = FirebaseAuth.instance.currentUser as User;
+  String verificationCode = '';
+  String verificationId = '';
+
+  void _verifyCode(phone) async {
     _formKey.currentState?.save();
 
-    if (verificationCode == '1234') {
-      Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (BuildContext context) => const LoadingPage(),
-        ),
-      );
+    await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: '+55$phone',
+        timeout: const Duration(seconds: 60),
+        verificationCompleted: (PhoneAuthCredential authCredential) async {
+          current.updatePhoneNumber(authCredential);
+          print({'authCredential': authCredential});
+          Navigator.of(context).pushNamed(AppRoutes.HOME);
+        },
+        verificationFailed: (FirebaseAuthException e) async {
+          if (e.code == 'invalid-phone-number') {
+            print('The provided phone number is not valid.');
+          }
+        },
+        codeSent: (String verificationId, int? resendToken) async {
+          print('Code Sent');
+          setState(() {
+            verificationId = verificationId;
+          });
+        },
+        codeAutoRetrievalTimeout: (_) async {
+          print('Auto Retrieval Timeout');
+        });
+  }
 
-      var future = new Future.delayed(const Duration(seconds: 3), () {
-        Navigator.of(context).pop();
-        Navigator.of(context).pushNamed(AppRoutes.HOME);
-      });
+  void _onSubmit(phone) async {
+    _formKey.currentState?.save();
+
+    if (verificationCode != '') {
+      try {
+        print({verificationId, verificationCode});
+        final credential = PhoneAuthProvider.credential(
+            verificationId: verificationId, smsCode: verificationCode);
+        await current.updatePhoneNumber(credential);
+
+        print({'credential': credential});
+      } on FirebaseAuthException catch (e) {
+        print('Error: Invalid Id');
+        print({'error': e});
+      }
     } else {
       await showDialog(
           context: context,
@@ -63,6 +94,9 @@ class _VerificationCodeState extends State<VerificationCode> {
 
   @override
   Widget build(BuildContext context) {
+    String phone = ModalRoute.of(context)!.settings.arguments as String;
+
+    _verifyCode(phone);
     return Scaffold(
       body: Container(
         padding: EdgeInsets.all(24),
@@ -83,7 +117,7 @@ class _VerificationCodeState extends State<VerificationCode> {
                 ),
                 Form(
                   key: _formKey,
-                  autovalidateMode: AutovalidateMode.always,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     children: [
                       Container(
@@ -108,7 +142,7 @@ class _VerificationCodeState extends State<VerificationCode> {
                         ),
                         child: PinCodeTextField(
                           appContext: context,
-                          length: 4,
+                          length: 6,
                           pinTheme: PinTheme(
                             shape: PinCodeFieldShape.box,
                             borderRadius: BorderRadius.circular(8),
@@ -125,7 +159,7 @@ class _VerificationCodeState extends State<VerificationCode> {
                       ),
                       PrimaryButton(
                         title: 'CONFIRMAR',
-                        onPress: () => _onSubmit(),
+                        onPress: () => _onSubmit(phone),
                       ),
                       SecondaryButton(
                           title: 'REENVIAR',
