@@ -30,6 +30,7 @@ dependencies:
   google_maps_flutter: ^2.0.2
   geolocator: ^8.0.0
   provider: ^6.0.1
+  pin_code_fields: ^7.3.0
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +50,8 @@ flutter:
   assets:
     - assets/login.png
     - assets/logo.png
+    - assets/loading.gif
+    - assets/loading.png
     - assets/header.png
 
   # An image asset can refer to one or more resolution-specific "variants", see

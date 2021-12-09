@@ -1,3 +1,4 @@
+import 'package:bookbuddies/routes/routes.dart';
 import 'package:flutter/material.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -6,7 +7,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      elevation: 8,
+      elevation: 3,
       child: Column(
         children: [
           AppBar(
@@ -21,7 +22,9 @@ class AppDrawer extends StatelessWidget {
               size: 32,
             ),
             title: Text('Perfil'),
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.PROFILE);
+            },
           ),
           ListTile(
             leading: Icon(
@@ -29,7 +32,9 @@ class AppDrawer extends StatelessWidget {
               size: 32,
             ),
             title: Text('Configurações'),
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.SETTINGS);
+            },
           ),
           ListTile(
             leading: Icon(
@@ -37,7 +42,9 @@ class AppDrawer extends StatelessWidget {
               size: 32,
             ),
             title: Text('Sobre o App'),
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.ABOUT);
+            },
           ),
         ],
       ),

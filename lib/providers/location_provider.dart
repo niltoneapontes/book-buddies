@@ -1,6 +1,7 @@
 import 'package:bookbuddies/models/userLocation.dart';
 import 'package:bookbuddies/services/location_service.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 
 enum LocationProviderStatus {
   Initial,
@@ -10,10 +11,14 @@ enum LocationProviderStatus {
 }
 
 class LocationProvider with ChangeNotifier {
-  UserLocation _userLocation = UserLocation(0, 0);
+  late UserLocation _userLocation;
   LocationServices _locationServices = LocationServices();
 
   LocationProviderStatus _status = LocationProviderStatus.Initial;
+
+  UserLocation get userLocation => _userLocation;
+
+  LocationProviderStatus get status => _status;
 
   Future<void> getLocation() async {
     try {
@@ -27,12 +32,10 @@ class LocationProvider with ChangeNotifier {
     }
   }
 
-  UserLocation get userLocation => _userLocation;
-
-  LocationProviderStatus get status => _status;
-
   void _updateStatus(LocationProviderStatus status) {
     if (_status != status) {
+      developer
+          .log('LocationProvider: Status updated from: $_status to: $status');
       _status = status;
       notifyListeners();
     }

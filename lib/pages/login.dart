@@ -15,14 +15,45 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _formData = Map<String, Object>();
 
-  void _onSubmit() {
+  void _onSubmit() async {
     _formKey.currentState?.save();
 
     final login = Login(
-      name: _formData['email'] as String,
+      email: _formData['email'] as String,
       password: _formData['password'] as String,
     );
-    Navigator.of(context).pushNamed(AppRoutes.HOME);
+    if (login.email == 'test@bookbuddies.com' && login.password == '123456') {
+      Navigator.of(context).pushNamed(AppRoutes.CODE);
+    } else if (login.email != '' || login.password != '') {
+      await showDialog(
+          context: context,
+          builder: (ctx) {
+            return Dialog(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      size: 64,
+                      color: Colors.red[400],
+                    ),
+                    Text('E-mail ou senha incorretos, tente novamente',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ))
+                  ],
+                ),
+              ),
+            );
+          });
+    }
   }
 
   @override

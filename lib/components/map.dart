@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:bookbuddies/models/userLocation.dart';
 import 'package:bookbuddies/providers/location_provider.dart';
@@ -23,6 +24,7 @@ class _MapWidgetState extends State<MapWidget> {
   late Position position;
   late GoogleMapController mapControler;
   Completer<GoogleMapController> _controller = Completer();
+  late Set<Marker> _markers = {};
 
   void animatedViewofMap({required double lat, required double lng}) async {
     CameraPosition cPosition = CameraPosition(
@@ -42,7 +44,6 @@ class _MapWidgetState extends State<MapWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Consumer(builder: (context, LocationProvider provider, _) {
-        // provider.getLocation();
         if (provider.status == LocationProviderStatus.Loading ||
             provider.status == LocationProviderStatus.Initial) {
           return Center(child: CircularProgressIndicator());
@@ -66,6 +67,12 @@ class _MapWidgetState extends State<MapWidget> {
               rotateGesturesEnabled: true,
               mapType: MapType.normal,
               myLocationButtonEnabled: true,
+              markers: _markers,
+              onLongPress: (argument) {
+                _markers.add(new Marker(
+                    markerId: MarkerId(Random().nextInt(1000).toString()),
+                    position: argument));
+              },
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
               },
