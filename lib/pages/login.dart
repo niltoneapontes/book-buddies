@@ -53,13 +53,7 @@ class _LoginPageState extends State<LoginPage> {
             .signInWithEmailAndPassword(
                 email: _formData['email'] as String,
                 password: _formData['password'] as String);
-        print(userCredential.user);
-        if (userCredential.user?.emailVerified == false) {
-          await userCredential.user?.sendEmailVerification();
-          Navigator.of(context).pushNamed(AppRoutes.CODE);
-        } else {
-          Navigator.of(context).pushNamed(AppRoutes.HOME);
-        }
+        Navigator.of(context).pushNamed(AppRoutes.HOME);
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
           await showDialog(

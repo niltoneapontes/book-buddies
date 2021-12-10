@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -21,52 +22,9 @@ class _HomePageState extends State<HomePage> {
   bool _shouldShowMap = false;
   String _searchValue = '';
 
-  List<Book> books = [
-    Book(
-      id: '1',
-      title: 'Os Testamentos',
-      coverURL:
-          'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flivrariaflorence.fbitsstatic.net%2Fimg%2Fp%2Flivro-os-testamentos-atwood-196714%2F383057.jpg%3Fw%3D660%26h%3D660%26v%3Dno-change&f=1&nofb=1',
-      author: 'Margaret Atwood',
-      host: 'Tairine Ellen',
-      available: true,
-      distance: '2km',
-      hostPhone: '(81)90000-0000',
-    ),
-    Book(
-      id: '2',
-      title: 'Harry Potter e a Pedra Filosofal',
-      coverURL:
-          'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ffccmansfield.org%2Fimg%2Fread-harry-potter-book-1-3.jpg&f=1&nofb=1',
-      author: 'J. K. Rowling',
-      host: 'Tairine Ellen',
-      available: true,
-      distance: '5km',
-      hostPhone: '(81)90000-0000',
-    ),
-    Book(
-      id: '3',
-      title: 'Os Testamentos',
-      coverURL:
-          'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flivrariaflorence.fbitsstatic.net%2Fimg%2Fp%2Flivro-os-testamentos-atwood-196714%2F383057.jpg%3Fw%3D660%26h%3D660%26v%3Dno-change&f=1&nofb=1',
-      author: 'Margaret Atwood',
-      host: 'Nilton Pontes',
-      available: false,
-      distance: '10km',
-      hostPhone: '(81)90000-0000',
-    ),
-    Book(
-      id: '4',
-      title: 'Harry Potter e a Pedra Filosofal',
-      coverURL:
-          'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ffccmansfield.org%2Fimg%2Fread-harry-potter-book-1-3.jpg&f=1&nofb=1',
-      author: 'J. K. Rowling',
-      host: 'Nilton Pontes',
-      available: true,
-      distance: '1km',
-      hostPhone: '(81)90000-0000',
-    ),
-  ];
+  DatabaseReference reference = FirebaseDatabase.instance.ref();
+
+  List<Book> books = [];
 
   @override
   void dispose() {
@@ -74,8 +32,33 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  void loadBooks() async {
+    DatabaseEvent event = await reference.once();
+
+    final loadedData =
+        List<Map<dynamic, dynamic>>.from(event.snapshot.value as List<Object?>);
+    final loadedBooks = loadedData.map((element) {
+      return Book(
+        id: element['id'],
+        author: element['author'],
+        title: element['title'],
+        available: element['available'],
+        coverURL: element['coverURL'],
+        distance: element['distance'],
+        host: element['host'],
+        hostPhone: element['hostPhone'],
+      );
+    });
+
+    setState(() {
+      books = loadedBooks.toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    loadBooks();
+
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Theme.of(context).primaryColor.withOpacity(0),

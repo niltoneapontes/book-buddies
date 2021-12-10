@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:bookbuddies/components/button.dart';
 import 'package:bookbuddies/models/book.dart';
 import 'package:bookbuddies/routes/routes.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class BookForm extends StatefulWidget {
@@ -18,6 +19,8 @@ class _BookFormState extends State<BookForm> {
   final _imageUrlController = TextEditingController();
   final _imageUrlFocus = FocusNode();
 
+  DatabaseReference reference = FirebaseDatabase.instance.ref();
+
   void _submitForm() {
     _formKey.currentState?.save();
     final newBook = Book(
@@ -30,15 +33,17 @@ class _BookFormState extends State<BookForm> {
       host: 'Nilton Pontes',
       hostPhone: '(81)99830-0867',
     );
-    print({
-      'id': Random().nextDouble().toString(),
-      'author': _formData['author'] as String,
-      "title": _formData['title'] as String,
-      "coverURL": _formData['coverURL'] as String,
-      "available": true,
-      "distance": '2km',
-      "host": 'Nilton Pontes',
-      "hostPhone": '(81)99830-0867',
+
+    final newReference = reference.push();
+    newReference.set({
+      'id': newBook.id,
+      'author': newBook.author,
+      'title': newBook.title,
+      'coverURL': newBook.coverURL,
+      'available': newBook.available,
+      'distance': newBook.distance,
+      'host': newBook.host,
+      'hostPhone': newBook.hostPhone,
     });
   }
 
