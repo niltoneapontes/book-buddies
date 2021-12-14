@@ -1,5 +1,7 @@
 import 'package:bookbuddies/routes/routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({Key? key}) : super(key: key);
@@ -44,6 +46,19 @@ class AppDrawer extends StatelessWidget {
             title: Text('Sobre o App'),
             onTap: () {
               Navigator.of(context).pushNamed(AppRoutes.ABOUT);
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.logout,
+              size: 32,
+            ),
+            title: Text('Sair'),
+            onTap: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.remove('@bb_user');
+              await FirebaseAuth.instance.signOut();
+              Navigator.of(context).pushReplacementNamed(AppRoutes.LOGIN);
             },
           ),
         ],

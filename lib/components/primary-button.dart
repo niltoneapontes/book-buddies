@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 
-class PrimaryButton extends StatelessWidget {
+class PrimaryButton extends StatefulWidget {
   final String title;
   final Function onPress;
+  bool loading;
 
-  const PrimaryButton({Key? key, required this.title, required this.onPress})
-      : super(key: key);
+  PrimaryButton({
+    Key? key,
+    required this.title,
+    required this.onPress,
+    this.loading = false,
+  }) : super(key: key);
 
+  @override
+  State<PrimaryButton> createState() => _PrimaryButtonState();
+}
+
+class _PrimaryButtonState extends State<PrimaryButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -17,15 +27,19 @@ class PrimaryButton extends StatelessWidget {
             alignment: Alignment.center,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30))),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-          ),
-        ),
+        child: widget.loading
+            ? CircularProgressIndicator(
+                color: Colors.white,
+              )
+            : Text(
+                widget.title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
         onPressed: () {
-          onPress();
+          widget.onPress();
         },
       ),
     );

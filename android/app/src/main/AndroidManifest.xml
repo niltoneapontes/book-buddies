@@ -5,6 +5,10 @@
    <application
         android:label="Book Buddies"
         android:icon="@mipmap/ic_icon">
+        
+            <meta-data
+                android:name="com.google.firebase.messaging.default_notification_icon"
+                android:resource="@mipmap/notification_icon" />
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

@@ -1,3 +1,7 @@
+import 'dart:collection';
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:bookbuddies/components/app-drawer.dart';
 import 'package:bookbuddies/components/map.dart';
 import 'package:bookbuddies/models/book.dart';
@@ -8,8 +12,11 @@ import 'package:bookbuddies/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_database/firebase_database.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -24,7 +31,11 @@ class _HomePageState extends State<HomePage> {
 
   DatabaseReference reference = FirebaseDatabase.instance.ref();
 
+  List<Book> history = [];
+
   List<Book> books = [];
+  List<Circle> circles = [];
+  List<Marker> markers = [];
 
   @override
   void dispose() {
@@ -32,33 +43,174 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void loadBooks() async {
+  double deg2rad(deg) {
+    return deg * (pi / 180);
+  }
+
+  double getDistance(lat1, long1, lat2, long2) {
+    const R = 6371;
+    final dLat = deg2rad(lat2 - lat1);
+    final dLon = deg2rad(long2 - long1);
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(dLon / 2);
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    final d = R * c;
+    return d;
+  }
+
+  LatLng parsePosition(String position) {
+    final lat = double.tryParse(position.split(',')[0].split(':')[1]);
+    final long = double.tryParse(
+        position.split(',')[1].split(':')[1].replaceAll('}', ''));
+    return LatLng(lat ?? 0, long ?? 0);
+  }
+
+  void clearHistory() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('@bb_history');
+
+    setState(() {
+      history = [];
+    });
+  }
+
+  void loadBooks(locationProvider) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    final jsonLoadedHistory = prefs.getString('@bb_history') ?? '[]';
+
+    final loadedHistory = json.decode(jsonLoadedHistory);
+
+    print('loaded: $loadedHistory');
+
     DatabaseEvent event = await reference.once();
 
-    final loadedData =
-        List<Map<dynamic, dynamic>>.from(event.snapshot.value as List<Object?>);
-    final loadedBooks = loadedData.map((element) {
+    if (event.snapshot.value != null && _searchValue != '') {
+      final loadedData = HashMap.from(event.snapshot.value as dynamic);
+      final List<Book> loadedBooks = [];
+      final List<Circle> loadedCircles = [];
+      final List<Marker> loadedMarkers = [];
+
+      loadedData.forEach((key, book) {
+        Map<String, Object> loadedBook = {};
+        // print('key: $key, book: $book');
+        book.forEach((k, b) {
+          loadedBook[k] = b;
+        });
+
+        final bookTitle = loadedBook['title'] as String;
+
+        if (bookTitle.toLowerCase().contains(_searchValue.toLowerCase())) {
+          loadedBooks.add(Book(
+            id: loadedBook['id'] as String,
+            author: loadedBook['author'] as String,
+            title: loadedBook['title'] as String,
+            available: loadedBook['available'] as bool,
+            coverURL: loadedBook['coverURL'] as String,
+            position: loadedBook['position'] as String,
+            host: loadedBook['host'] as String,
+            uid: loadedBook['uid'] as String,
+            hostPhone: loadedBook['hostPhone'] as String,
+          ));
+          loadedCircles.add(
+            new Circle(
+              zIndex: 5,
+              circleId: CircleId(loadedBook['title'] as String),
+              center: parsePosition(loadedBook['position'].toString()),
+              visible: true,
+              fillColor: Color.fromRGBO(0, 166, 166, 0.2),
+              radius: 16,
+              strokeColor: Color.fromRGBO(0, 166, 166, 1),
+              strokeWidth: 1,
+            ),
+          );
+          final parsedPosition =
+              parsePosition(loadedBook['position'].toString());
+          final distance = getDistance(
+            locationProvider.userLocation.latitude,
+            locationProvider.userLocation.longitude,
+            parsedPosition.latitude,
+            parsedPosition.longitude,
+          );
+
+          loadedMarkers.add(
+            new Marker(
+              markerId: MarkerId(loadedBook['title'] as String),
+              position: parsedPosition,
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueOrange),
+              alpha: 1,
+              zIndex: 7,
+              infoWindow: InfoWindow(
+                  title: loadedBook['title'] as String,
+                  snippet:
+                      '${loadedBook['author']} - ${distance.toStringAsFixed(1)}km com ${loadedBook['host']}',
+                  onTap: () async {
+                    await prefs.setString(
+                        '@bb_history',
+                        json.encode([
+                          ...history,
+                          {
+                            "id": loadedBook['id'] as String,
+                            "author": loadedBook['author'] as String,
+                            "title": loadedBook['title'] as String,
+                            "available": loadedBook['available'] as bool,
+                            "coverURL": loadedBook['coverURL'] as String,
+                            "position": loadedBook['position'] as String,
+                            "host": loadedBook['host'] as String,
+                            "uid": loadedBook['uid'] as String,
+                            "hostPhone": loadedBook['hostPhone'] as String,
+                          }
+                        ]));
+                    Navigator.of(context).pushNamed(AppRoutes.BOOK_DETAILS,
+                        arguments: Book(
+                          id: loadedBook['id'] as String,
+                          author: loadedBook['author'] as String,
+                          title: loadedBook['title'] as String,
+                          available: loadedBook['available'] as bool,
+                          coverURL: loadedBook['coverURL'] as String,
+                          position: loadedBook['position'] as String,
+                          host: loadedBook['host'] as String,
+                          uid: loadedBook['uid'] as String,
+                          hostPhone: loadedBook['hostPhone'] as String,
+                        ));
+                  }),
+            ),
+          );
+        }
+      });
+      setState(() {
+        books = loadedBooks;
+        circles = loadedCircles;
+        markers = loadedMarkers;
+      });
+    } else {
+      setState(() {
+        books = [];
+      });
+    }
+
+    final readyHistory = loadedHistory.map((element) {
       return Book(
         id: element['id'],
-        author: element['author'],
         title: element['title'],
-        available: element['available'],
+        author: element['author'],
         coverURL: element['coverURL'],
-        distance: element['distance'],
         host: element['host'],
         hostPhone: element['hostPhone'],
+        available: element['available'],
+        position: element['position'],
+        uid: element['uid'],
       );
     });
 
     setState(() {
-      books = loadedBooks.toList();
+      history = List<Book>.from(readyHistory);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    loadBooks();
-
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Theme.of(context).primaryColor.withOpacity(0),
@@ -66,13 +218,15 @@ class _HomePageState extends State<HomePage> {
       ),
     );
 
-    User currentUser = FirebaseAuth.instance.currentUser as User;
+    User? currentUser = FirebaseAuth.instance.currentUser;
     var locationProvider = Provider.of<LocationProvider>(context, listen: true);
+
+    loadBooks(locationProvider);
 
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('Olá, ${currentUser.displayName}'),
+          title: Text('Olá, ${currentUser?.displayName}'),
           flexibleSpace: Image(
             image: AssetImage('assets/header.png'),
             fit: BoxFit.fill,
@@ -103,15 +257,24 @@ class _HomePageState extends State<HomePage> {
                       : MediaQuery.of(context).size.height * 0.15 - 8,
                 ),
                 width: double.infinity,
-                child: (_shouldShowMap == false && books.length > 0)
+                child: (_shouldShowMap == false && history.length > 0)
                     ? ListView.builder(
-                        itemCount: books.length,
+                        itemCount: history.length,
                         padding: EdgeInsets.only(
                           bottom: 24,
                           left: 24,
                           right: 24,
                         ),
                         itemBuilder: (ctx, i) {
+                          final parsedPosition =
+                              parsePosition(history[i].position.toString());
+                          final distance = getDistance(
+                            locationProvider.userLocation.latitude,
+                            locationProvider.userLocation.longitude,
+                            parsedPosition.latitude,
+                            parsedPosition.longitude,
+                          );
+
                           return Card(
                             elevation: 3,
                             shape: RoundedRectangleBorder(
@@ -123,16 +286,16 @@ class _HomePageState extends State<HomePage> {
                               onTap: () {
                                 Navigator.of(context).pushNamed(
                                     AppRoutes.BOOK_DETAILS,
-                                    arguments: books[i]);
+                                    arguments: history[i]);
                               },
                               title: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    books[i].title,
+                                    history[i].title,
                                   ),
                                   Text(
-                                    books[i].author,
+                                    history[i].author,
                                   )
                                 ],
                               ),
@@ -142,23 +305,23 @@ class _HomePageState extends State<HomePage> {
                                   SizedBox(
                                     height: 8,
                                   ),
-                                  Text(books[i].available
-                                      ? 'Disponível - ${books[i].distance}'
-                                      : 'Indisponível - ${books[i].distance}'),
-                                  Text(books[i].host)
+                                  Text(history[i].available
+                                      ? 'Disponível - ${distance.toStringAsFixed(1)}km'
+                                      : 'Indisponível - ${distance.toStringAsFixed(1)}km'),
+                                  Text(history[i].host)
                                 ],
                               ),
                               leading: CircleAvatar(
                                 radius: 32,
                                 backgroundImage:
-                                    NetworkImage(books[i].coverURL),
+                                    NetworkImage(history[i].coverURL),
                               ),
                               contentPadding: EdgeInsets.all(12),
                             ),
                           );
                         },
                       )
-                    : (_shouldShowMap == false && books.length == 0)
+                    : (_shouldShowMap == false && history.length == 0)
                         ? Padding(
                             padding: EdgeInsets.all(40),
                             child: Column(
@@ -179,12 +342,15 @@ class _HomePageState extends State<HomePage> {
                             ),
                           )
                         : Center(
-                            child: _searchValue.contains('Harry')
+                            child: books.isNotEmpty
                                 ? StreamProvider<UserLocation>(
                                     initialData: locationProvider.userLocation,
                                     create: (context) =>
                                         LocationServices().locationStream,
-                                    child: MapWidget(),
+                                    child: MapWidget(
+                                      circles: circles,
+                                      markers: markers,
+                                    ),
                                   )
                                 : Padding(
                                     padding: EdgeInsets.all(40),
@@ -277,9 +443,7 @@ class _HomePageState extends State<HomePage> {
                                         fontWeight: FontWeight.bold)),
                                 TextButton(
                                   onPressed: () {
-                                    setState(() {
-                                      books = [];
-                                    });
+                                    clearHistory();
                                   },
                                   child: Text('Limpar',
                                       style: TextStyle(

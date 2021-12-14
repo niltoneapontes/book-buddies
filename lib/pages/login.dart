@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:bookbuddies/components/primary-button.dart';
 import 'package:bookbuddies/components/secondary-button.dart';
+import 'package:bookbuddies/providers/location_provider.dart';
 import 'package:bookbuddies/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -11,12 +16,22 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool isPasswordShown = false;
+  bool loading = false;
 
   final _formKey = GlobalKey<FormState>();
   final _formData = Map<String, Object>();
 
+  void _loadUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('@bb_user') ?? '';
+    if (userId.length > 2) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.HOME);
+    }
+  }
+
   void _onSubmit() async {
     _formKey.currentState?.save();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (_formData['email'] == '' || _formData['password'] == '') {
       await showDialog(
@@ -48,12 +63,19 @@ class _LoginPageState extends State<LoginPage> {
             );
           });
     } else {
+      setState(() {
+        loading = true;
+      });
       try {
         UserCredential userCredential = await FirebaseAuth.instance
             .signInWithEmailAndPassword(
                 email: _formData['email'] as String,
                 password: _formData['password'] as String);
-        Navigator.of(context).pushNamed(AppRoutes.HOME);
+        await prefs.setString('@bb_user', userCredential.user?.uid ?? '');
+        setState(() {
+          loading = false;
+        });
+        Navigator.of(context).pushReplacementNamed(AppRoutes.HOME);
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
           await showDialog(
@@ -84,6 +106,10 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 );
               });
+
+          setState(() {
+            loading = false;
+          });
         } else if (e.code == 'wrong-password') {
           await showDialog(
               context: context,
@@ -113,6 +139,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 );
               });
+          setState(() {
+            loading = false;
+          });
         }
       }
     }
@@ -120,6 +149,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    _loadUser();
+
     return Scaffold(
       body: Container(
         padding: EdgeInsets.all(24),
@@ -154,7 +185,10 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           }
                         },
-                        onSaved: (email) => _formData['email'] = email ?? '',
+                        onSaved: (email) {
+                          _formData['email'] = email ?? '';
+                          // locationProvider.getLocation();
+                        },
                         decoration: InputDecoration(
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -261,6 +295,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       PrimaryButton(
                         title: 'ENTRAR',
+                        loading: loading,
                         onPress: () => _onSubmit(),
                       ),
                       SizedBox(

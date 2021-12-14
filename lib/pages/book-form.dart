@@ -2,9 +2,12 @@ import 'dart:math';
 
 import 'package:bookbuddies/components/button.dart';
 import 'package:bookbuddies/models/book.dart';
+import 'package:bookbuddies/providers/location_provider.dart';
 import 'package:bookbuddies/routes/routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class BookForm extends StatefulWidget {
   const BookForm({Key? key}) : super(key: key);
@@ -20,8 +23,11 @@ class _BookFormState extends State<BookForm> {
   final _imageUrlFocus = FocusNode();
 
   DatabaseReference reference = FirebaseDatabase.instance.ref();
+  User? currentUser = FirebaseAuth.instance.currentUser;
 
-  void _submitForm() {
+  void _submitForm(location) {
+    location.getLocation();
+
     _formKey.currentState?.save();
     final newBook = Book(
       id: Random().nextDouble().toString(),
@@ -29,9 +35,11 @@ class _BookFormState extends State<BookForm> {
       title: _formData['title'] as String,
       coverURL: _formData['coverURL'] as String,
       available: true,
-      distance: '2km',
-      host: 'Nilton Pontes',
-      hostPhone: '(81)99830-0867',
+      position:
+          "{lat: ${location.userLocation.latitude}, long: ${location.userLocation.longitude}}",
+      host: currentUser?.displayName ?? '',
+      uid: currentUser?.uid ?? '',
+      hostPhone: currentUser?.phoneNumber ?? '',
     );
 
     final newReference = reference.push();
@@ -41,8 +49,9 @@ class _BookFormState extends State<BookForm> {
       'title': newBook.title,
       'coverURL': newBook.coverURL,
       'available': newBook.available,
-      'distance': newBook.distance,
+      'position': newBook.position,
       'host': newBook.host,
+      'uid': newBook.uid,
       'hostPhone': newBook.hostPhone,
     });
   }
@@ -65,6 +74,8 @@ class _BookFormState extends State<BookForm> {
 
   @override
   Widget build(BuildContext context) {
+    var locationProvider = Provider.of<LocationProvider>(context, listen: true);
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -197,7 +208,10 @@ class _BookFormState extends State<BookForm> {
                   textInputAction: TextInputAction.done,
                   controller: _imageUrlController,
                   onSaved: (imageUrl) => _formData['coverURL'] = imageUrl ?? '',
-                  onFieldSubmitted: (_) => _submitForm(),
+                  onFieldSubmitted: (_) {
+                    _submitForm(locationProvider);
+                    Navigator.of(context).pop();
+                  },
                   decoration: InputDecoration(
                     labelText: 'URL da Capa',
                     errorBorder: OutlineInputBorder(
@@ -261,8 +275,8 @@ class _BookFormState extends State<BookForm> {
                 CustomButton(
                     title: 'CADASTRAR',
                     onPress: () {
-                      _submitForm();
-                      Navigator.of(context).pushNamed(AppRoutes.HOME);
+                      _submitForm(locationProvider);
+                      Navigator.of(context).pop();
                     }),
               ],
             ),

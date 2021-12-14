@@ -15,12 +15,10 @@ class _ProfileState extends State<Profile> {
   bool isConfirmPasswordShown = false;
 
   final _formKey = GlobalKey<FormState>();
-  User currentUser = FirebaseAuth.instance.currentUser as User;
+  User? currentUser = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
-    print({'User to edit': currentUser});
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -51,7 +49,7 @@ class _ProfileState extends State<Profile> {
                       return null;
                     }
                   },
-                  initialValue: currentUser.displayName,
+                  initialValue: currentUser?.displayName,
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.person),
                     labelText: 'Nome completo',
@@ -93,7 +91,7 @@ class _ProfileState extends State<Profile> {
                 ),
                 TextFormField(
                   textInputAction: TextInputAction.next,
-                  initialValue: currentUser.email,
+                  initialValue: currentUser?.email,
                   validator: (value) {
                     if (value!.isEmpty ||
                         value.length < 3 ||
@@ -144,7 +142,7 @@ class _ProfileState extends State<Profile> {
                 ),
                 TextFormField(
                   textInputAction: TextInputAction.next,
-                  initialValue: currentUser.phoneNumber,
+                  initialValue: currentUser?.phoneNumber,
                   validator: (value) {
                     if (value!.isEmpty || value.length < 3) {
                       return 'Entre seu telefone no formato (DDD) XXXXX-XXXX';

@@ -31,8 +31,8 @@ class _SignUpPageState extends State<SignUpPage> {
         phoneNumber: '+55$phone',
         timeout: const Duration(seconds: 60),
         verificationCompleted: (PhoneAuthCredential authCredential) async {
-          User current = FirebaseAuth.instance.currentUser as User;
-          current.updatePhoneNumber(authCredential);
+          User? current = FirebaseAuth.instance.currentUser;
+          current?.updatePhoneNumber(authCredential);
           Navigator.of(context).pushNamed(AppRoutes.HOME);
         },
         verificationFailed: (FirebaseAuthException e) async {
@@ -57,8 +57,8 @@ class _SignUpPageState extends State<SignUpPage> {
       try {
         final credential = PhoneAuthProvider.credential(
             verificationId: loadedVerificationId, smsCode: verificationCode);
-        User current = FirebaseAuth.instance.currentUser as User;
-        await current.updatePhoneNumber(credential);
+        User? current = FirebaseAuth.instance.currentUser;
+        await current?.updatePhoneNumber(credential);
         Navigator.of(context).pushNamed(AppRoutes.HOME);
       } on FirebaseAuthException catch (e) {
         await showDialog(
@@ -162,8 +162,8 @@ class _SignUpPageState extends State<SignUpPage> {
         email: _formData['email'] as String,
         password: _formData['confirmPassword'] as String,
       );
-      User current = FirebaseAuth.instance.currentUser as User;
-      current.updateDisplayName(_formData['name'] as String);
+      User? current = FirebaseAuth.instance.currentUser;
+      current?.updateDisplayName(_formData['name'] as String);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         await showDialog(
