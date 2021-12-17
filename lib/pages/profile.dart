@@ -37,7 +37,6 @@ class _ProfileState extends State<Profile> {
           alignment: Alignment.center,
           child: Form(
             key: _formKey,
-            autovalidateMode: AutovalidateMode.always,
             child: Column(
               children: [
                 TextFormField(
@@ -301,7 +300,10 @@ class _ProfileState extends State<Profile> {
                 PrimaryButton(
                     title: 'SALVAR',
                     onPress: () {
-                      Navigator.of(context).pushNamed(AppRoutes.LOGIN);
+                      if (_formKey.currentState!.validate()) {
+                        Navigator.of(context)
+                            .pushReplacementNamed(AppRoutes.HOME);
+                      }
                     }),
               ],
             ),

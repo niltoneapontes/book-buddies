@@ -171,7 +171,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Form(
                   key: _formKey,
-                  autovalidateMode: AutovalidateMode.always,
                   child: Column(
                     children: [
                       TextFormField(
@@ -296,7 +295,11 @@ class _LoginPageState extends State<LoginPage> {
                       PrimaryButton(
                         title: 'ENTRAR',
                         loading: loading,
-                        onPress: () => _onSubmit(),
+                        onPress: () {
+                          if (_formKey.currentState!.validate()) {
+                            _onSubmit();
+                          }
+                        },
                       ),
                       SizedBox(
                         height: 12,
