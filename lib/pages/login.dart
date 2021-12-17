@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:bookbuddies/components/primary-button.dart';
 import 'package:bookbuddies/components/secondary-button.dart';
-import 'package:bookbuddies/models/login.dart';
+import 'package:bookbuddies/providers/location_provider.dart';
 import 'package:bookbuddies/routes/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -11,20 +16,24 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool isPasswordShown = false;
+  bool loading = false;
 
   final _formKey = GlobalKey<FormState>();
   final _formData = Map<String, Object>();
 
+  void _loadUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('@bb_user') ?? '';
+    if (userId.length > 2) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.HOME);
+    }
+  }
+
   void _onSubmit() async {
     _formKey.currentState?.save();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    final login = Login(
-      email: _formData['email'] as String,
-      password: _formData['password'] as String,
-    );
-    if (login.email == 'test@bookbuddies.com' && login.password == '123456') {
-      Navigator.of(context).pushNamed(AppRoutes.CODE);
-    } else if (login.email != '' || login.password != '') {
+    if (_formData['email'] == '' || _formData['password'] == '') {
       await showDialog(
           context: context,
           builder: (ctx) {
@@ -41,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
                       size: 64,
                       color: Colors.red[400],
                     ),
-                    Text('E-mail ou senha incorretos, tente novamente',
+                    Text('E-mail ou senha incorretos, tente novamente!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey,
@@ -53,11 +62,95 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
           });
+    } else {
+      setState(() {
+        loading = true;
+      });
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
+                email: _formData['email'] as String,
+                password: _formData['password'] as String);
+        await prefs.setString('@bb_user', userCredential.user?.uid ?? '');
+        setState(() {
+          loading = false;
+        });
+        Navigator.of(context).pushReplacementNamed(AppRoutes.HOME);
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          await showDialog(
+              context: context,
+              builder: (ctx) {
+                return Dialog(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          size: 64,
+                          color: Colors.red[400],
+                        ),
+                        Text('E-mail ou senha incorretos, tente novamente',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ))
+                      ],
+                    ),
+                  ),
+                );
+              });
+
+          setState(() {
+            loading = false;
+          });
+        } else if (e.code == 'wrong-password') {
+          await showDialog(
+              context: context,
+              builder: (ctx) {
+                return Dialog(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          size: 64,
+                          color: Colors.red[400],
+                        ),
+                        Text('E-mail ou senha incorretos, tente novamente',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ))
+                      ],
+                    ),
+                  ),
+                );
+              });
+          setState(() {
+            loading = false;
+          });
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    _loadUser();
+
     return Scaffold(
       body: Container(
         padding: EdgeInsets.all(24),
@@ -92,7 +185,10 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           }
                         },
-                        onSaved: (email) => _formData['email'] = email ?? '',
+                        onSaved: (email) {
+                          _formData['email'] = email ?? '';
+                          // locationProvider.getLocation();
+                        },
                         decoration: InputDecoration(
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -199,6 +295,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       PrimaryButton(
                         title: 'ENTRAR',
+                        loading: loading,
                         onPress: () => _onSubmit(),
                       ),
                       SizedBox(

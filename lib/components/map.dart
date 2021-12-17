@@ -14,7 +14,11 @@ const double cameraTilt = 50;
 const double cameraBearing = 30;
 
 class MapWidget extends StatefulWidget {
-  const MapWidget({Key? key}) : super(key: key);
+  final List<Circle> circles;
+  final List<Marker> markers;
+
+  const MapWidget({Key? key, required this.circles, required this.markers})
+      : super(key: key);
 
   @override
   _MapWidgetState createState() => _MapWidgetState();
@@ -24,17 +28,10 @@ class _MapWidgetState extends State<MapWidget> {
   late Position position;
   late GoogleMapController mapControler;
   Completer<GoogleMapController> _controller = Completer();
-  late Set<Marker> _markers = {};
+  late Set<Circle> _circles = this.widget.circles.toSet();
+  late Set<Marker> _markers = this.widget.markers.toSet();
 
-  void animatedViewofMap({required double lat, required double lng}) async {
-    CameraPosition cPosition = CameraPosition(
-      zoom: cameraZoom,
-      target: LatLng(lat, lng),
-    );
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(cPosition));
-  }
-
+  @override
   void dispose() {
     LocationServices().closeLocation();
     super.dispose();
@@ -50,12 +47,10 @@ class _MapWidgetState extends State<MapWidget> {
         } else if (provider.status == LocationProviderStatus.Success) {
           var locationProvider = Provider.of<UserLocation>(context);
           CameraPosition initialCameraPosition = CameraPosition(
-              zoom: cameraZoom,
-              target: LatLng(
-                  locationProvider.latitude, locationProvider.longitude));
-
-          animatedViewofMap(
-              lat: locationProvider.latitude, lng: locationProvider.longitude);
+            zoom: cameraZoom,
+            target:
+                LatLng(locationProvider.latitude, locationProvider.longitude),
+          );
 
           return Stack(children: [
             GoogleMap(
@@ -68,11 +63,8 @@ class _MapWidgetState extends State<MapWidget> {
               mapType: MapType.normal,
               myLocationButtonEnabled: true,
               markers: _markers,
-              onLongPress: (argument) {
-                _markers.add(new Marker(
-                    markerId: MarkerId(Random().nextInt(1000).toString()),
-                    position: argument));
-              },
+              circles: _circles,
+              onLongPress: (argument) {},
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
               },

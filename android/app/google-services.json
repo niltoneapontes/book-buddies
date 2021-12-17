@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "23484747271",
+    "firebase_url": "https://book-buddies-c9ea1-default-rtdb.firebaseio.com",
     "project_id": "book-buddies-c9ea1",
     "storage_bucket": "book-buddies-c9ea1.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "23484747271-6ebdvao6ufk2bli5qj60vee8dpdea7cs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.bookbuddies",
+            "certificate_hash": "a9bf081d442d8f0571dc550b94100e30f304faae"
+          }
+        },
         {
           "client_id": "23484747271-v7j83on3g485v65u0s6j8cieg1r255hn.apps.googleusercontent.com",
           "client_type": 1,
@@ -37,6 +46,13 @@
             {
               "client_id": "23484747271-r29llcbedbv2dkq2qgg0m3obbm10n8i1.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "23484747271-p2lmpu00rddcjidrl2ga83g52ho3kedt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "br.com.bookbuddies"
+              }
             }
           ]
         }

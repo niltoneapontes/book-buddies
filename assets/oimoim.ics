@@ -1,0 +1,27 @@
+BEGIN:VCALENDAR
+PRODID:-//Microsoft Corporation//Outlook 16.0 MIMEDIR//EN
+VERSION:2.0
+METHOD:REQUEST
+X-MS-OLK-FORCEINSPECTOROPEN:TRUE
+BEGIN:VEVENT
+ATTENDEE;CN=Nilton Pontes;RSVP=FALSE:mailto:nilton.pontes@jbq.global
+CLASS:PUBLIC
+CREATED:20211214T180517Z
+DTEND:20211221T230000Z
+DTSTAMP:20211214T180517Z
+DTSTART:20211221T213000Z
+LAST-MODIFIED:20211214T180517Z
+ORGANIZER;CN=Microsoft Teams:mailto:noreply@teams.registration.microsoft.com
+PRIORITY:5
+SEQUENCE:0
+SUMMARY:JBQ.BlueEve
+TRANSP:OPAQUE
+UID:HPXJW_S1w06E9VShsEHufw,e7T6JuR--Ema2rm81dfsGw,mFXmbgbIjUKBZxe-bGnBKw,y3JqVCEFS0-bSjUeqCgAtA,OJds0gKed06k8qVgsGWk_A,0uIHBnDKmkyd9b7KruXiwg
+DESCRIPTION:Ingressar na reunião do Teams: https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjUwZTMwZTctZjI1OS00OGU0LWIxMjEtYjc5MGVmYmNmMjdk%40thread.v2/0?context=%7b%22Tid%22%3a%225bc9f51c-b5f4-4ec3-84f5-54a1b041ee7f%22%2c%22Oid%22%3a%2224919307-1530-4c57-8bf4-1ad4637b1e80%22%2c%22prid%22%3a%22HPXJW_S1w06E9VShsEHufw%2ce7T6JuR--Ema2rm81dfsGw%2cmFXmbgbIjUKBZxe-bGnBKw%2cy3JqVCEFS0-bSjUeqCgAtA%2cOJds0gKed06k8qVgsGWk_A%2c0uIHBnDKmkyd9b7KruXiwg%2cLuogGdo8m-j1UfszF5C24A%22%2c%22isPublic%22%3atrue%7d
+X-ALT-DESC;FMTTYPE=text/html:<!DOCTYPE html><html><body style="margin: 0; padding: 10px;">    <table border="0" cellspacing="0" cellpadding="0" width="600" align="center" bgcolor="#EEF1F6">        <tr>            <td align="center" style="border-top: 4px solid #6264a7; padding-top: 28px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 20px; color: #6264a7; line-height:20px;">                Microsoft Teams            </td>        </tr>        <tr>            <td align="center" style="padding-top: 12px; color: #000000; font-size:18px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; line-height:24px">                Seu lugar está reservado!            </td>        </tr>        <tr>            <td align="center" style="color: #484644; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size:14px; font-weight: 600; line-height:20px; padding-top:32px">                JBQ.BlueEve            </td>        </tr>        <tr>            <td align="center" style="color: #484644; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size:14px;  line-height:20px; padding-top:6px;">                ter, 21 de dez de 2021 18:30 - 20:00 (UTC-03:00) Bras&#237;lia            </td>        </tr>        <tr>            <td align="center" style="padding-top: 36px">                <table>                    <tr>                        <td align="center" bgcolor="#6264A7" style="padding: 10px 0px;" width="245">                            <a href="https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjUwZTMwZTctZjI1OS00OGU0LWIxMjEtYjc5MGVmYmNmMjdk%40thread.v2/0?context=%7b%22Tid%22%3a%225bc9f51c-b5f4-4ec3-84f5-54a1b041ee7f%22%2c%22Oid%22%3a%2224919307-1530-4c57-8bf4-1ad4637b1e80%22%2c%22prid%22%3a%22HPXJW_S1w06E9VShsEHufw%2ce7T6JuR--Ema2rm81dfsGw%2cmFXmbgbIjUKBZxe-bGnBKw%2cy3JqVCEFS0-bSjUeqCgAtA%2cOJds0gKed06k8qVgsGWk_A%2c0uIHBnDKmkyd9b7KruXiwg%2cLuogGdo8m-j1UfszF5C24A%22%2c%22isPublic%22%3atrue%7d" target="_blank" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; color: #FFF; text-decoration: none;">Ingressar no evento</a>                        </td>                    </tr>                </table>            </td>        </tr>        <tr>            <td align="center" style="padding-top: 14px;">                <a href="https://teams.microsoft.com/registration/HPXJW_S1w06E9VShsEHufw,e7T6JuR--Ema2rm81dfsGw,mFXmbgbIjUKBZxe-bGnBKw,y3JqVCEFS0-bSjUeqCgAtA,OJds0gKed06k8qVgsGWk_A,0uIHBnDKmkyd9b7KruXiwg?registrationId=HPXJW_S1w06E9VShsEHufw,e7T6JuR--Ema2rm81dfsGw,mFXmbgbIjUKBZxe-bGnBKw,y3JqVCEFS0-bSjUeqCgAtA,OJds0gKed06k8qVgsGWk_A,0uIHBnDKmkyd9b7KruXiwg,LuogGdo8m-j1UfszF5C24A&amp;tenantId=5bc9f51c-b5f4-4ec3-84f5-54a1b041ee7f" target="_blank" style="font-family: Segoe UI,-apple-system,BlinkMacSystemFont,San Francisco,Roboto,Helvetica Neue,Arial; font-weight:600; font-size:12px; line-height: 16px; color:#6264a7;">Cancelar registro</a>            </td>        </tr>        <tr>            <td style="padding-top:36px;">                <table width="600">                    <tr>                        <td height="1" width="39" style="line-height:1px;">&nbsp;</td>                        <td height="1" style="border-top: 1px solid #b3b0ad; line-height:1px;">&nbsp;</td>                        <td height="1" width="39" style="line-height:1px;">&nbsp;</td>                    </tr>                </table>            </td>        </tr>        <tr>            <td align="center" style="color: #484644; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; padding: 32px 0 17px; line-height: 12px;">                © 2021 Microsoft Corporation                <br>                One Microsoft Way, Redmond, WA 98052-7329                <br>                <a href="http://go.microsoft.com/fwlink/p/?LinkID=512132" target="_blank" style="color:#6264a7;">Política de privacidade</a>            </td>        </tr>    <tr><td><img src="https://urlshortener.teams.microsoft.com/8D9BF2BEC2D288E-7-0" style="display: none;"></td></tr></table></body></html>
+X-MICROSOFT-CDO-BUSYSTATUS:TENTATIVE
+X-MICROSOFT-CDO-IMPORTANCE:1
+X-MICROSOFT-CDO-INTENDEDSTATUS:BUSY
+X-MS-OLK-APPTSEQTIME:20211214T180517Z
+END:VEVENT
+END:VCALENDAR
