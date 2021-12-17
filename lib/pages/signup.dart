@@ -16,6 +16,7 @@ class _SignUpPageState extends State<SignUpPage> {
   bool isPasswordShown = false;
   bool isConfirmPasswordShown = false;
   bool showForm = true;
+  bool loading = false;
 
   final _formData = Map<String, Object>();
   final _formKey = GlobalKey<FormState>();
@@ -33,7 +34,7 @@ class _SignUpPageState extends State<SignUpPage> {
         verificationCompleted: (PhoneAuthCredential authCredential) async {
           User? current = FirebaseAuth.instance.currentUser;
           current?.updatePhoneNumber(authCredential);
-          Navigator.of(context).pushNamed(AppRoutes.HOME);
+          Navigator.of(context).pushReplacementNamed(AppRoutes.HOME);
         },
         verificationFailed: (FirebaseAuthException e) async {
           if (e.code == 'invalid-phone-number') {
@@ -59,7 +60,7 @@ class _SignUpPageState extends State<SignUpPage> {
             verificationId: loadedVerificationId, smsCode: verificationCode);
         User? current = FirebaseAuth.instance.currentUser;
         await current?.updatePhoneNumber(credential);
-        Navigator.of(context).pushNamed(AppRoutes.HOME);
+        Navigator.of(context).pushReplacementNamed(AppRoutes.HOME);
       } on FirebaseAuthException catch (e) {
         await showDialog(
             context: context,
@@ -126,6 +127,9 @@ class _SignUpPageState extends State<SignUpPage> {
     _formKey.currentState?.save();
 
     if (_formData['confirmPassword'] == '') {
+      setState(() {
+        loading = false;
+      });
       await showDialog(
           context: context,
           builder: (ctx) {
@@ -156,6 +160,10 @@ class _SignUpPageState extends State<SignUpPage> {
           });
     }
 
+    setState(() {
+      loading = true;
+    });
+
     try {
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -164,8 +172,17 @@ class _SignUpPageState extends State<SignUpPage> {
       );
       User? current = FirebaseAuth.instance.currentUser;
       current?.updateDisplayName(_formData['name'] as String);
+
+      _verifyCode(_formData['phone'] as String);
+      setState(() {
+        showForm = false;
+        loading = false;
+      });
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
+        setState(() {
+          loading = false;
+        });
         await showDialog(
             context: context,
             builder: (ctx) {
@@ -195,6 +212,9 @@ class _SignUpPageState extends State<SignUpPage> {
               );
             });
       } else if (e.code == 'email-already-in-use') {
+        setState(() {
+          loading = false;
+        });
         await showDialog(
             context: context,
             builder: (ctx) {
@@ -224,11 +244,10 @@ class _SignUpPageState extends State<SignUpPage> {
               );
             });
       }
-      _verifyCode(_formData['phone'] as String);
-      setState(() {
-        showForm = false;
-      });
     } catch (e) {
+      setState(() {
+        loading = false;
+      });
       print('Unidentified Error');
     }
   }
@@ -254,7 +273,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 alignment: Alignment.center,
                 child: Form(
                   key: _formKey,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     children: [
                       TextFormField(
@@ -532,8 +550,11 @@ class _SignUpPageState extends State<SignUpPage> {
                       SizedBox(height: 24),
                       PrimaryButton(
                           title: 'CADASTRAR',
+                          loading: loading,
                           onPress: () {
-                            _signUp();
+                            if (_formKey.currentState!.validate()) {
+                              _signUp();
+                            }
                           }),
                     ],
                   ),
@@ -561,7 +582,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       Form(
                         key: _codeKey,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         child: Column(
                           children: [
                             Container(
@@ -608,8 +628,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             SecondaryButton(
                                 title: 'REENVIAR',
                                 onPress: () {
-                                  Navigator.of(context)
-                                      .pushNamed(AppRoutes.SIGNUP);
+                                  _verifyCode(_formData['phone']);
                                 })
                           ],
                         ),

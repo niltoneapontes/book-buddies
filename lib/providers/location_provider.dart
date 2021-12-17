@@ -13,12 +13,20 @@ enum LocationProviderStatus {
 class LocationProvider with ChangeNotifier {
   late UserLocation _userLocation;
   LocationServices _locationServices = LocationServices();
+  List<double> _range = [];
 
   LocationProviderStatus _status = LocationProviderStatus.Initial;
 
   UserLocation get userLocation => _userLocation;
 
   LocationProviderStatus get status => _status;
+
+  List<double> get range => _range;
+
+  set setRange(List<double> inputRange) {
+    this._range = inputRange;
+    notifyListeners();
+  }
 
   Future<void> getLocation() async {
     try {

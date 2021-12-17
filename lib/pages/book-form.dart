@@ -94,7 +94,6 @@ class _BookFormState extends State<BookForm> {
           alignment: Alignment.center,
           child: Form(
             key: _formKey,
-            autovalidateMode: AutovalidateMode.always,
             child: Column(
               children: [
                 TextFormField(
@@ -208,10 +207,6 @@ class _BookFormState extends State<BookForm> {
                   textInputAction: TextInputAction.done,
                   controller: _imageUrlController,
                   onSaved: (imageUrl) => _formData['coverURL'] = imageUrl ?? '',
-                  onFieldSubmitted: (_) {
-                    _submitForm(locationProvider);
-                    Navigator.of(context).pop();
-                  },
                   decoration: InputDecoration(
                     labelText: 'URL da Capa',
                     errorBorder: OutlineInputBorder(
@@ -275,8 +270,10 @@ class _BookFormState extends State<BookForm> {
                 CustomButton(
                     title: 'CADASTRAR',
                     onPress: () {
-                      _submitForm(locationProvider);
-                      Navigator.of(context).pop();
+                      if (_formKey.currentState!.validate()) {
+                        _submitForm(locationProvider);
+                        Navigator.of(context).pop();
+                      }
                     }),
               ],
             ),

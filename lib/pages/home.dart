@@ -28,6 +28,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _shouldShowMap = false;
   String _searchValue = '';
+  final _searchController = TextEditingController();
 
   DatabaseReference reference = FirebaseDatabase.instance.ref();
 
@@ -85,6 +86,12 @@ class _HomePageState extends State<HomePage> {
 
     DatabaseEvent event = await reference.once();
 
+    if (_searchValue == '') {
+      setState(() {
+        _shouldShowMap = false;
+      });
+    }
+
     if (event.snapshot.value != null && _searchValue != '') {
       final loadedData = HashMap.from(event.snapshot.value as dynamic);
       final List<Book> loadedBooks = [];
@@ -93,7 +100,6 @@ class _HomePageState extends State<HomePage> {
 
       loadedData.forEach((key, book) {
         Map<String, Object> loadedBook = {};
-        // print('key: $key, book: $book');
         book.forEach((k, b) {
           loadedBook[k] = b;
         });
@@ -112,18 +118,7 @@ class _HomePageState extends State<HomePage> {
             uid: loadedBook['uid'] as String,
             hostPhone: loadedBook['hostPhone'] as String,
           ));
-          loadedCircles.add(
-            new Circle(
-              zIndex: 5,
-              circleId: CircleId(loadedBook['title'] as String),
-              center: parsePosition(loadedBook['position'].toString()),
-              visible: true,
-              fillColor: Color.fromRGBO(0, 166, 166, 0.2),
-              radius: 16,
-              strokeColor: Color.fromRGBO(0, 166, 166, 1),
-              strokeWidth: 1,
-            ),
-          );
+
           final parsedPosition =
               parsePosition(loadedBook['position'].toString());
           final distance = getDistance(
@@ -133,50 +128,66 @@ class _HomePageState extends State<HomePage> {
             parsedPosition.longitude,
           );
 
-          loadedMarkers.add(
-            new Marker(
-              markerId: MarkerId(loadedBook['title'] as String),
-              position: parsedPosition,
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                  BitmapDescriptor.hueOrange),
-              alpha: 1,
-              zIndex: 7,
-              infoWindow: InfoWindow(
-                  title: loadedBook['title'] as String,
-                  snippet:
-                      '${loadedBook['author']} - ${distance.toStringAsFixed(1)}km com ${loadedBook['host']}',
-                  onTap: () async {
-                    await prefs.setString(
-                        '@bb_history',
-                        json.encode([
-                          ...history,
-                          {
-                            "id": loadedBook['id'] as String,
-                            "author": loadedBook['author'] as String,
-                            "title": loadedBook['title'] as String,
-                            "available": loadedBook['available'] as bool,
-                            "coverURL": loadedBook['coverURL'] as String,
-                            "position": loadedBook['position'] as String,
-                            "host": loadedBook['host'] as String,
-                            "uid": loadedBook['uid'] as String,
-                            "hostPhone": loadedBook['hostPhone'] as String,
-                          }
-                        ]));
-                    Navigator.of(context).pushNamed(AppRoutes.BOOK_DETAILS,
-                        arguments: Book(
-                          id: loadedBook['id'] as String,
-                          author: loadedBook['author'] as String,
-                          title: loadedBook['title'] as String,
-                          available: loadedBook['available'] as bool,
-                          coverURL: loadedBook['coverURL'] as String,
-                          position: loadedBook['position'] as String,
-                          host: loadedBook['host'] as String,
-                          uid: loadedBook['uid'] as String,
-                          hostPhone: loadedBook['hostPhone'] as String,
-                        ));
-                  }),
-            ),
-          );
+          if (distance >= locationProvider.range[0] &&
+              distance <= locationProvider.range[1]) {
+            loadedCircles.add(
+              new Circle(
+                zIndex: 5,
+                circleId: CircleId(loadedBook['title'] as String),
+                center: parsePosition(loadedBook['position'].toString()),
+                visible: true,
+                fillColor: Color.fromRGBO(0, 166, 166, 0.2),
+                radius: 16,
+                strokeColor: Color.fromRGBO(0, 166, 166, 1),
+                strokeWidth: 1,
+              ),
+            );
+
+            loadedMarkers.add(
+              new Marker(
+                markerId: MarkerId(loadedBook['title'] as String),
+                position: parsedPosition,
+                icon: BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueOrange),
+                alpha: 1,
+                zIndex: 7,
+                infoWindow: InfoWindow(
+                    title: loadedBook['title'] as String,
+                    snippet:
+                        '${loadedBook['author']} - ${distance.toStringAsFixed(1)}km com ${loadedBook['host']}',
+                    onTap: () async {
+                      await prefs.setString(
+                          '@bb_history',
+                          json.encode([
+                            ...history,
+                            {
+                              "id": loadedBook['id'] as String,
+                              "author": loadedBook['author'] as String,
+                              "title": loadedBook['title'] as String,
+                              "available": loadedBook['available'] as bool,
+                              "coverURL": loadedBook['coverURL'] as String,
+                              "position": loadedBook['position'] as String,
+                              "host": loadedBook['host'] as String,
+                              "uid": loadedBook['uid'] as String,
+                              "hostPhone": loadedBook['hostPhone'] as String,
+                            }
+                          ]));
+                      Navigator.of(context).pushNamed(AppRoutes.BOOK_DETAILS,
+                          arguments: Book(
+                            id: loadedBook['id'] as String,
+                            author: loadedBook['author'] as String,
+                            title: loadedBook['title'] as String,
+                            available: loadedBook['available'] as bool,
+                            coverURL: loadedBook['coverURL'] as String,
+                            position: loadedBook['position'] as String,
+                            host: loadedBook['host'] as String,
+                            uid: loadedBook['uid'] as String,
+                            hostPhone: loadedBook['hostPhone'] as String,
+                          ));
+                    }),
+              ),
+            );
+          }
         }
       });
       setState(() {
@@ -222,6 +233,10 @@ class _HomePageState extends State<HomePage> {
     var locationProvider = Provider.of<LocationProvider>(context, listen: true);
 
     loadBooks(locationProvider);
+
+    if (locationProvider.status != LocationProviderStatus.Success) {
+      locationProvider.getLocation();
+    }
 
     return Scaffold(
         appBar: AppBar(
@@ -408,15 +423,46 @@ class _HomePageState extends State<HomePage> {
                         keyboardType: TextInputType.text,
                         textInputAction: TextInputAction.search,
                         onChanged: (value) {
-                          locationProvider.getLocation();
                           setState(() {
                             _shouldShowMap = true;
                             _searchValue = value;
                           });
                         },
+                        controller: _searchController,
                         decoration: InputDecoration(
                           labelText: 'Pesquise por um livro',
                           prefixIcon: Icon(Icons.search),
+                          labelStyle: TextStyle(
+                            fontSize: 18,
+                          ),
+                          // suffix: IconButton(
+                          //   padding: EdgeInsets.all(0),
+                          //   icon: Icon(Icons.close),
+                          //   onPressed: () {
+                          //     setState(() {
+                          //       _searchValue = '';
+                          //     });
+                          //     _searchController.clear();
+                          //   },
+                          // ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              size: 18,
+                            ),
+                            padding: EdgeInsets.all(0),
+                            alignment: Alignment.center,
+                            onPressed: () {
+                              setState(() {
+                                _searchValue = '';
+                              });
+                              _searchController.clear();
+                            },
+                          ),
+
+                          suffixIconConstraints: BoxConstraints(
+                            maxHeight: 18,
+                          ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(

@@ -1,6 +1,8 @@
 import 'package:bookbuddies/components/primary-button.dart';
+import 'package:bookbuddies/providers/location_provider.dart';
 import 'package:bookbuddies/routes/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);
@@ -18,6 +20,8 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
+    LocationProvider provider = Provider.of(context);
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -35,7 +39,6 @@ class _SettingsState extends State<Settings> {
           alignment: Alignment.center,
           child: Form(
             key: _formKey,
-            autovalidateMode: AutovalidateMode.always,
             child: Container(
               height: MediaQuery.of(context).size.height - 88,
               padding: EdgeInsets.all(24),
@@ -77,6 +80,7 @@ class _SettingsState extends State<Settings> {
                           onChanged: (RangeValues values) {
                             setState(() {
                               _currentRangeValues = values;
+                              provider.setRange = [values.start, values.end];
                             });
                           },
                         ),
